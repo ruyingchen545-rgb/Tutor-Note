@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tutor Notes</title>
+<style>
+:root{
+  --bg:#fff;--fg:#111;--muted:#8a8a8a;--line:#e8e8e8;--soft:#f6f6f6;
+  --danger:#a33;--shadow:0 10px 30px rgba(0,0,0,.06)
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:820px;margin:auto;padding:24px 16px 100px}
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:22px}
+.kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+h1{font-size:34px;letter-spacing:-1px;margin:0}
+.small{font-size:12px;color:var(--muted)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.section{display:flex;justify-content:space-between;align-items:center;margin:22px 0 12px}
+.section h2{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0}
+.primary,.secondary,.ghost{
+  border-radius:12px;padding:11px 14px
+}
+.primary{border:0;background:#111;color:#fff;font-weight:650}
+.secondary{border:1px solid var(--line);background:#fff;color:#111}
+.ghost{border:0;background:transparent;color:#555;padding-left:0;padding-right:0}
+.icon{width:44px;height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:22px}
+.hidden{display:none!important}
+.search{width:100%;height:46px;border:1px solid var(--line);border-radius:13px;padding:0 13px;outline:none;background:#fff}
+.search:focus,input:focus,textarea:focus{border-color:#aaa}
+.student-list,.lesson-list{display:grid;gap:10px}
+.student-card,.lesson-card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:16px}
+.student-card{display:flex;justify-content:space-between;align-items:center;text-align:left;width:100%}
+.student-name{font-size:20px;font-weight:700}
+.meta{font-size:12px;color:var(--muted);margin-top:5px}
+.arrow{font-size:22px;color:#888}
+.empty{text-align:center;padding:44px 12px;color:#aaa;border:1px dashed var(--line);border-radius:16px}
+.back{border:0;background:transparent;padding:0;color:#111}
+.profile-name{font-size:34px;font-weight:760;letter-spacing:-1px;margin:14px 0 4px}
+.lesson-date{font-size:13px;color:var(--muted);margin-bottom:8px}
+.lesson-summary{font-size:18px;font-weight:650;line-height:1.45}
+.lesson-row{margin-top:10px;font-size:14px;line-height:1.6}
+.photos{display:flex;gap:8px;overflow:auto;margin-top:12px;padding-bottom:2px}
+.thumb{width:92px;height:92px;object-fit:cover;border-radius:12px;border:1px solid var(--line);flex:0 0 92px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tag{font-size:11px;padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:#666}
+.card-actions{display:flex;gap:12px;margin-top:14px}
+.card-actions button{border:0;background:transparent;padding:0;color:#666;font-size:13px}
+.card-actions .danger{color:var(--danger)}
+
+.modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,.22);display:flex;align-items:flex-end;z-index:30}
+.modal{background:#fff;width:100%;max-height:93vh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 16px calc(24px + env(safe-area-inset-bottom))}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal h3{font-size:24px;margin:0}
+.close{border:0;background:transparent;font-size:26px;color:#777}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:#666;margin-bottom:7px}
+input[type=text],input[type=date],textarea,select{
+  width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;color:#111;outline:none
+}
+input[type=text],input[type=date],select{height:48px;padding:0 12px}
+textarea{min-height:88px;padding:12px;resize:vertical;line-height:1.5}
+.upload{border:1px dashed #ccc;border-radius:14px;padding:16px;background:var(--soft);text-align:center}
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.preview-wrap{position:relative}
+.preview{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+.remove-photo{position:absolute;right:5px;top:5px;width:26px;height:26px;border:0;border-radius:50%;background:rgba(0,0,0,.7);color:#fff}
+.actions{display:flex;gap:9px;margin-top:18px}
+.actions button{flex:1}
+.note{font-size:12px;color:#999;line-height:1.5;margin-top:8px}
+.ai-box{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--soft);margin-bottom:16px}
+.ai-title{font-size:13px;font-weight:700;margin-bottom:6px}
+.ai-status{font-size:12px;color:#777;line-height:1.5}
+.ai-btn{margin-top:10px;width:100%}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 4px}
+.stat{border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{font-size:20px;display:block}
+.stat span{font-size:11px;color:var(--muted)}
+.menu{position:relative}
+.menu-panel{position:absolute;right:0;top:50px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:6px;min-width:180px;z-index:10}
+.menu-panel button{width:100%;text-align:left;border:0;background:#fff;padding:10px;border-radius:10px}
+.menu-panel button:active{background:var(--soft)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:999px;font-size:13px;z-index:50}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:60;display:flex;align-items:center;justify-content:center;padding:18px}
+.viewer img{max-width:100%;max-height:100%;object-fit:contain}
+.viewer button{position:absolute;top:18px;right:18px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:25px}
+@media(min-width:700px){
+  .modal-wrap{align-items:center;justify-content:center;padding:20px}
+  .modal{max-width:760px;border-radius:22px;max-height:90vh}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="homeView">
+    <div class="topbar">
+      <div>
+        <div class="kicker">Teaching Archive</div>
+        <h1>Tutor Notes</h1>
+      </div>
+      <div class="row">
+        <button id="addStudentTop" class="icon">＋</button>
+        <div class="menu">
+          <button id="menuBtn" class="icon">⋯</button>
+          <div id="menuPanel" class="menu-panel hidden">
+            <button id="exportBtn">Export backup</button>
+            <button id="importBtn">Import backup</button>
+            <button id="aboutAIBtn">AI settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <input id="studentSearch" class="search" placeholder="Search students">
+
+    <div class="section">
+      <h2>Students</h2>
+      <button id="addStudentBtn" class="secondary">Add Student</button>
+    </div>
+
+    <div id="studentList" class="student-list"></div>
+  </section>
+
+  <section id="profileView" class="hidden">
+    <button id="backBtn" class="back">← Students</button>
+    <div id="profileName" class="profile-name"></div>
+    <div id="profileMeta" class="meta"></div>
+
+    <div class="stats">
+      <div class="stat"><b id="statLessons">0</b><span>Lessons</span></div>
+      <div class="stat"><b id="statPhotos">0</b><span>Photos</span></div>
+      <div class="stat"><b id="statLast">—</b><span>Last class</span></div>
+    </div>
+
+    <div class="toolbar">
+      <button id="newLessonBtn" class="primary">＋ New Lesson</button>
+      <button id="editStudentBtn" class="secondary">Edit Student</button>
+    </div>
+
+    <input id="lessonSearch" class="search" placeholder="Search lessons, key points, homework...">
+
+    <div class="section"><h2>Lesson History</h2></div>
+    <div id="lessonList" class="lesson-list"></div>
+  </section>
+</div>
+
+<input id="importFile" type="file" accept="application/json" class="hidden">
+
+<div id="studentModalWrap" class="modal-wrap hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="studentModalTitle">New Student</h3>
+      <button class="close" data-close="studentModalWrap">×</button>
+    </div>
+    <div class="field">
+      <label>Student Name</label>
+      <input id="studentNameInput" type="text" placeholder="e.g. Lucy">
+    </div>
+    <div class="field">
+      <label>Grade / Subject / Notes</label>
+      <input id="studentMetaInput" type="text" placeholder="e.g. Grade 7 · English">
+    </div>
+    <div class="actions">
+      <button class="secondary" data-close="studentModalWrap">Cancel</button>
+      <button class="primary" id="saveStudentBtn">Save</button>
+    </div>
+    <button id="deleteStudentBtn" class="ghost hidden" style="color:#a33">Delete this student</button>
+  </div>
+</div>
+
+<div id="lessonModalWrap" class="modal-wrap hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="lessonModalTitle">New Lesson</h3>
+      <button class="close" data-close="lessonModalWrap">×</button>
+    </div>
+
+    <div class="field">
+      <label>Date</label>
+      <input id="lessonDate" type="date">
+    </div>
+
+    <div class="field">
+      <label>Classroom Note Photos</label>
+      <div class="upload">
+        <input id="lessonPhotos" type="file" accept="image/*" multiple>
+        <div class="note">可以拍照或从相册选择，图片会压缩后保存在当前浏览器。</div>
+      </div>
+      <div id="photoPreview" class="preview-grid"></div>
+    </div>
+
+    <div class="ai-box">
+      <div class="ai-title">AI Lesson Summary</div>
+      <div id="aiStatus" class="ai-status">AI 接口尚未连接。网页主体可以正常使用；连接后可根据课堂照片自动生成总结。</div>
+      <button id="generateAIBtn" class="secondary ai-btn" type="button">Generate Summary</button>
+    </div>
+
+    <div class="field"><label>Lesson Summary</label><textarea id="lessonSummary" placeholder="今天讲了什么？"></textarea></div>
+    <div class="field"><label>Key Points</label><textarea id="lessonKeyPoints" placeholder="重要知识点"></textarea></div>
+    <div class="field"><label>Weak Points / Mistakes</label><textarea id="lessonWeakPoints" placeholder="学生容易错在哪里？"></textarea></div>
+    <div class="field"><label>Homework</label><textarea id="lessonHomework" placeholder="作业"></textarea></div>
+    <div class="field"><label>Next Lesson</label><textarea id="lessonNext" placeholder="下次课重点"></textarea></div>
+    <div class="field"><label>Tags</label><input id="lessonTags" type="text" placeholder="e.g. grammar, past tense, unit 3"></div>
+
+    <div class="actions">
+      <button class="secondary" data-close="lessonModalWrap">Cancel</button>
+      <button class="primary" id="saveLessonBtn">Save Lesson</button>
+    </div>
+  </div>
+</div>
+
+<div id="aiModalWrap" class="modal-wrap hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>AI Settings</h3>
+      <button class="close" data-close="aiModalWrap">×</button>
+    </div>
+    <div class="field">
+      <label>AI endpoint URL</label>
+      <input id="aiEndpointInput" type="text" placeholder="https://your-backend.example.com/summarize">
+    </div>
+    <div class="note">
+      GitHub Pages 是纯前端网页，不能安全保存 AI 密钥。这里填写你之后部署的后端地址即可。
+      后端收到 JSON 后应返回 summary、keyPoints、weakPoints、homework、nextLesson。
+    </div>
+    <div class="actions">
+      <button class="secondary" data-close="aiModalWrap">Cancel</button>
+      <button class="primary" id="saveAISettingsBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="viewer" class="viewer hidden">
+  <button id="viewerClose">×</button>
+  <img id="viewerImg">
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+(function(){
+  const DB_NAME='tutor-notes-final-db', DB_VERSION=1, STUDENTS='students', LESSONS='lessons';
+  let db=null,currentStudentId=null,editingStudentId=null,editingLessonId=null,pendingPhotos=[];
+  const $=id=>document.getElementById(id);
+
+  function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+  function pad(n){return n<10?'0'+n:''+n}
+  function todayKey(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  function formatDate(key){const p=key.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}
+  function show(id){$(id).classList.remove('hidden')}
+  function hide(id){$(id).classList.add('hidden')}
+  function toast(msg){$('toast').textContent=msg;show('toast');setTimeout(()=>hide('toast'),1800)}
+
+  function openDB(){return new Promise((resolve,reject)=>{
+    const r=indexedDB.open(DB_NAME,DB_VERSION);
+    r.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains(STUDENTS)) d.createObjectStore(STUDENTS,{keyPath:'id'});
+      if(!d.objectStoreNames.contains(LESSONS)) d.createObjectStore(LESSONS,{keyPath:'id'});
+    };
+    r.onsuccess=()=>{db=r.result;resolve()};
+    r.onerror=()=>reject(r.error);
+  })}
+  function store(name,mode='readonly'){return db.transaction(name,mode).objectStore(name)}
+  function put(name,val){return new Promise((res,rej)=>{const r=store(name,'readwrite').put(val);r.onsuccess=()=>res(val);r.onerror=()=>rej(r.error)})}
+  function get(name,id){return new Promise((res,rej)=>{const r=store(name).get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+  function getAll(name){return new Promise((res,rej)=>{const r=store(name).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+  function del(name,id){return new Promise((res,rej)=>{const r=store(name,'readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+
+  async function lessonsFor(studentId){
+    const all=await getAll(LESSONS);
+    return all.filter(x=>x.studentId===studentId).sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0));
+  }
+
+  async function renderStudents(){
+    const q=$('studentSearch').value.trim().toLowerCase();
+    const students=(await getAll(STUDENTS)).sort((a,b)=>(a.created||0)-(b.created||0));
+    const filtered=students.filter(s=>(s.name+' '+(s.meta||'')).toLowerCase().includes(q));
+    const list=$('studentList'); list.innerHTML='';
+    if(!filtered.length){list.innerHTML='<div class="empty">'+(students.length?'No matching students.':'No students yet.<br>Add your first student.')+'</div>';return}
+    for(const s of filtered){
+      const lessons=await lessonsFor(s.id);
+      const btn=document.createElement('button');
+      btn.className='student-card';
+      btn.innerHTML='<div><div class="student-name">'+escapeHTML(s.name)+'</div><div class="meta">'+escapeHTML(s.meta||'No note')+' · '+lessons.length+' lessons</div></div><div class="arrow">›</div>';
+      btn.onclick=()=>openProfile(s.id);
+      list.appendChild(btn);
+    }
+  }
+
+  async function openProfile(id){
+    currentStudentId=id;
+    const s=await get(STUDENTS,id); if(!s)return;
+    $('profileName').textContent=s.name;
+    $('profileMeta').textContent=s.meta||'Student profile';
+    $('homeView').classList.add('hidden');
+    $('profileView').classList.remove('hidden');
+    await renderLessons();
+  }
+
+  function row(label,text){
+    if(!text)return '';
+    return '<div class="lesson-row"><b>'+label+':</b><br>'+escapeHTML(text).replace(/\\n/g,'<br>')+'</div>';
+  }
+
+  async function renderLessons(){
+    const all=await lessonsFor(currentStudentId);
+    const q=$('lessonSearch').value.trim().toLowerCase();
+    const lessons=all.filter(l=>[
+      l.summary,l.keyPoints,l.weakPoints,l.homework,l.nextLesson,l.tags,l.date
+    ].join(' ').toLowerCase().includes(q));
+
+    $('statLessons').textContent=all.length;
+    $('statPhotos').textContent=all.reduce((n,l)=>n+(l.photos||[]).length,0);
+    $('statLast').textContent=all.length ? all[0].date.slice(5).replace('-','/') : '—';
+
+    const list=$('lessonList'); list.innerHTML='';
+    if(!lessons.length){list.innerHTML='<div class="empty">'+(all.length?'No matching lesson records.':'No lesson records yet.<br>Tap “New Lesson” after class.')+'</div>';return}
+
+    lessons.forEach(l=>{
+      const card=document.createElement('div'); card.className='lesson-card';
+      const imgs=(l.photos||[]).length?'<div class="photos">'+l.photos.map((p,i)=>'<img class="thumb" data-photo="'+i+'" src="'+p+'">').join('')+'</div>':'';
+      const tags=(l.tags||'').trim()?'<div class="tags">'+l.tags.split(',').map(t=>t.trim()).filter(Boolean).map(t=>'<span class="tag">'+escapeHTML(t)+'</span>').join('')+'</div>':'';
+
+      card.innerHTML=
+        '<div class="lesson-date">'+formatDate(l.date)+'</div>'+
+        '<div class="lesson-summary">'+escapeHTML(l.summary||'Lesson record')+'</div>'+
+        imgs+tags+
+        row('Key Points',l.keyPoints)+row('Weak Points',l.weakPoints)+row('Homework',l.homework)+row('Next Lesson',l.nextLesson)+
+        '<div class="card-actions"><button class="edit">Edit</button><button class="danger delete">Delete</button></div>';
+
+      card.querySelectorAll('[data-photo]').forEach(img=>{
+        img.onclick=()=>{ $('viewerImg').src=img.src; show('viewer'); };
+      });
+      card.querySelector('.edit').onclick=()=>openEditLesson(l.id);
+      card.querySelector('.delete').onclick=async()=>{
+        if(confirm('Delete this lesson record?')){await del(LESSONS,l.id);renderLessons();toast('Deleted')}
+      };
+      list.appendChild(card);
+    });
+  }
+
+  function openNewStudent(){
+    editingStudentId=null;
+    $('studentModalTitle').textContent='New Student';
+    $('studentNameInput').value=''; $('studentMetaInput').value='';
+    $('deleteStudentBtn').classList.add('hidden'); show('studentModalWrap');
+  }
+
+  async function openEditStudent(){
+    const s=await get(STUDENTS,currentStudentId); if(!s)return;
+    editingStudentId=s.id;
+    $('studentModalTitle').textContent='Edit Student';
+    $('studentNameInput').value=s.name||''; $('studentMetaInput').value=s.meta||'';
+    $('deleteStudentBtn').classList.remove('hidden'); show('studentModalWrap');
+  }
+
+  async function saveStudent(){
+    const name=$('studentNameInput').value.trim(), meta=$('studentMetaInput').value.trim();
+    if(!name){$('studentNameInput').focus();return}
+    if(editingStudentId){
+      const old=await get(STUDENTS,editingStudentId);
+      await put(STUDENTS,{...old,name,meta,updated:Date.now()});
+      hide('studentModalWrap'); await openProfile(editingStudentId); toast('Student updated');
+    }else{
+      await put(STUDENTS,{id:uid(),name,meta,created:Date.now()});
+      hide('studentModalWrap'); await renderStudents(); toast('Student added');
+    }
+  }
+
+  async function deleteStudent(){
+    if(!editingStudentId||!confirm('Delete this student and all lesson records?'))return;
+    const lessons=await lessonsFor(editingStudentId);
+    for(const l of lessons) await del(LESSONS,l.id);
+    await del(STUDENTS,editingStudentId);
+    hide('studentModalWrap');
+    currentStudentId=null; editingStudentId=null;
+    $('profileView').classList.add('hidden'); $('homeView').classList.remove('hidden');
+    renderStudents();toast('Student deleted');
+  }
+
+  function resetLessonForm(){
+    pendingPhotos=[]; editingLessonId=null;
+    $('lessonModalTitle').textContent='New Lesson';
+    $('lessonDate').value=todayKey(); $('lessonPhotos').value='';
+    ['lessonSummary','lessonKeyPoints','lessonWeakPoints','lessonHomework','lessonNext','lessonTags'].forEach(id=>$(id).value='');
+    renderPhotoPreview();
+  }
+
+  function openLesson(){resetLessonForm();show('lessonModalWrap')}
+
+  async function openEditLesson(id){
+    const l=await get(LESSONS,id); if(!l)return;
+    editingLessonId=id;
+    $('lessonModalTitle').textContent='Edit Lesson';
+    $('lessonDate').value=l.date||todayKey();
+    $('lessonSummary').value=l.summary||'';
+    $('lessonKeyPoints').value=l.keyPoints||'';
+    $('lessonWeakPoints').value=l.weakPoints||'';
+    $('lessonHomework').value=l.homework||'';
+    $('lessonNext').value=l.nextLesson||'';
+    $('lessonTags').value=l.tags||'';
+    pendingPhotos=[...(l.photos||[])];
+    renderPhotoPreview();
+    show('lessonModalWrap');
+  }
+
+  function fileToDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+  async function compress(file){
+    const src=await fileToDataURL(file);
+    return new Promise(res=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width,h=img.height,max=1500;
+        if(w>max||h>max){const s=Math.min(max/w,max/h);w=Math.round(w*s);h=Math.round(h*s)}
+        const c=document.createElement('canvas'); c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg',0.78));
+      };
+      img.src=src;
+    });
+  }
+
+  async function addPhotos(files){
+    const arr=[...files].slice(0,8);
+    for(const f of arr){try{pendingPhotos.push(await compress(f))}catch(e){}}
+    renderPhotoPreview();
+  }
+
+  function renderPhotoPreview(){
+    const wrap=$('photoPreview');wrap.innerHTML='';
+    pendingPhotos.forEach((src,i)=>{
+      const box=document.createElement('div');box.className='preview-wrap';
+      box.innerHTML='<img class="preview" src="'+src+'"><button class="remove-photo" type="button">×</button>';
+      box.querySelector('img').onclick=()=>{$('viewerImg').src=src;show('viewer')};
+      box.querySelector('button').onclick=()=>{pendingPhotos.splice(i,1);renderPhotoPreview()};
+      wrap.appendChild(box);
+    });
+  }
+
+  async function saveLesson(){
+    const existing=editingLessonId ? await get(LESSONS,editingLessonId) : null;
+    const lesson={
+      id:editingLessonId||uid(),
+      studentId:currentStudentId,
+      date:$('lessonDate').value||todayKey(),
+      photos:[...pendingPhotos],
+      summary:$('lessonSummary').value.trim(),
+      keyPoints:$('lessonKeyPoints').value.trim(),
+      weakPoints:$('lessonWeakPoints').value.trim(),
+      homework:$('lessonHomework').value.trim(),
+      nextLesson:$('lessonNext').value.trim(),
+      tags:$('lessonTags').value.trim(),
+      created:existing?.created||Date.now(),
+      updated:Date.now()
+    };
+    await put(LESSONS,lesson);hide('lessonModalWrap');await renderLessons();toast(editingLessonId?'Lesson updated':'Lesson saved');
+  }
+
+  async function exportBackup(){
+    const students=await getAll(STUDENTS),lessons=await getAll(LESSONS);
+    const data={app:'Tutor Notes',version:1,exportedAt:new Date().toISOString(),students,lessons};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='tutor-notes-backup-'+todayKey()+'.json';
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
+    hide('menuPanel');toast('Backup exported');
+  }
+
+  async function importBackup(file){
+    try{
+      const text=await file.text(),data=JSON.parse(text);
+      if(!Array.isArray(data.students)||!Array.isArray(data.lessons))throw new Error();
+      if(!confirm('Import backup and add/replace matching records?'))return;
+      for(const s of data.students) await put(STUDENTS,s);
+      for(const l of data.lessons) await put(LESSONS,l);
+      await renderStudents();toast('Backup imported');
+    }catch(e){alert('Invalid backup file.')}
+  }
+
+  function getEndpoint(){return localStorage.getItem('tutor-notes-ai-endpoint')||''}
+  function updateAIStatus(){
+    $('aiStatus').textContent=getEndpoint()
+      ? 'AI endpoint connected. Upload classroom photos, then tap Generate Summary.'
+      : 'AI 接口尚未连接。网页主体可以正常使用；连接后可根据课堂照片自动生成总结。';
+  }
+
+  async function generateAI(){
+    const endpoint=getEndpoint();
+    if(!endpoint){show('aiModalWrap');return}
+    if(!pendingPhotos.length){alert('Please upload at least one classroom note photo first.');return}
+
+    $('generateAIBtn').disabled=true;
+    $('generateAIBtn').textContent='Generating...';
+    try{
+      const res=await fetch(endpoint,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          photos:pendingPhotos,
+          date:$('lessonDate').value||todayKey(),
+          studentId:currentStudentId
+        })
+      });
+      if(!res.ok)throw new Error('AI request failed');
+      const data=await res.json();
+      if(data.summary) $('lessonSummary').value=data.summary;
+      if(data.keyPoints) $('lessonKeyPoints').value=Array.isArray(data.keyPoints)?data.keyPoints.join('\n'):data.keyPoints;
+      if(data.weakPoints) $('lessonWeakPoints').value=Array.isArray(data.weakPoints)?data.weakPoints.join('\n'):data.weakPoints;
+      if(data.homework) $('lessonHomework').value=data.homework;
+      if(data.nextLesson) $('lessonNext').value=data.nextLesson;
+      toast('AI summary generated');
+    }catch(e){
+      alert('AI generation failed. Please check your endpoint.');
+    }finally{
+      $('generateAIBtn').disabled=false;
+      $('generateAIBtn').textContent='Generate Summary';
+    }
+  }
+
+  $('addStudentTop').onclick=openNewStudent;
+  $('addStudentBtn').onclick=openNewStudent;
+  $('saveStudentBtn').onclick=saveStudent;
+  $('deleteStudentBtn').onclick=deleteStudent;
+  $('editStudentBtn').onclick=openEditStudent;
+  $('newLessonBtn').onclick=openLesson;
+  $('saveLessonBtn').onclick=saveLesson;
+  $('lessonPhotos').onchange=e=>addPhotos(e.target.files);
+  $('studentSearch').oninput=renderStudents;
+  $('lessonSearch').oninput=renderLessons;
+  $('backBtn').onclick=()=>{$('profileView').classList.add('hidden');$('homeView').classList.remove('hidden');renderStudents()};
+  $('menuBtn').onclick=()=>$('menuPanel').classList.toggle('hidden');
+  $('exportBtn').onclick=exportBackup;
+  $('importBtn').onclick=()=>{$('importFile').click();hide('menuPanel')};
+  $('importFile').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0])};
+  $('aboutAIBtn').onclick=()=>{hide('menuPanel');$('aiEndpointInput').value=getEndpoint();show('aiModalWrap')};
+  $('saveAISettingsBtn').onclick=()=>{localStorage.setItem('tutor-notes-ai-endpoint',$('aiEndpointInput').value.trim());hide('aiModalWrap');updateAIStatus();toast('AI settings saved')};
+  $('generateAIBtn').onclick=generateAI;
+  $('viewerClose').onclick=()=>hide('viewer');
+  $('viewer').onclick=e=>{if(e.target===$('viewer'))hide('viewer')};
+
+  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>hide(b.dataset.close));
+  document.querySelectorAll('.modal-wrap').forEach(w=>w.addEventListener('click',e=>{if(e.target===w)hide(w.id)}));
+
+  openDB().then(()=>{renderStudents();updateAIStatus()}).catch(()=>alert('Please open this site in Safari after publishing with GitHub Pages.'));
+})();
+</script>
+</body>
+</html>
